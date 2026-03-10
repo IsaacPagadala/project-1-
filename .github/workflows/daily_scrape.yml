@@ -2,7 +2,7 @@ name: Daily Book Scrape
 
 on:
   schedule:
-    - cron: '0 9 * * *' # Runs every day at 9:00 AM
+    - cron: '0 4 * * *' # Runs every day at 9:00 AM
   workflow_dispatch: # Allows you to run it manually for testing
 
 jobs:
