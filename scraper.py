@@ -69,7 +69,7 @@ if "GCP_SA_KEY" in os.environ:
     
     # Define your Table ID and Project ID
     # MAKE SURE TO REPLACE 'your-project-id' WITH YOUR ACTUAL PROJECT ID
-    project_id = "your-project-id" 
+    project_id = "price-tracker-pipeline" 
     table_id = f"{project_id}.ecommerce_data.daily_book_prices"
 
     # 2. Push to BigQuery
