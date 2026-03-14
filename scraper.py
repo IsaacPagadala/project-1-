@@ -59,8 +59,7 @@ print(f"Max price: £{max_price:.2f}")
 # Save cleaned dataset
 df.to_csv("cleaned_data.csv", index=False)
 
-# --- UPDATED BIGQUERY SECTION ---
-# 1. Use the EXACT project ID from your screenshot
+# Use the exact Project ID from your BigQuery screen
 project_id = "price-tracker-pipeline" 
 table_id = "ecommerce_dat.daily_book_prices"
 
@@ -69,15 +68,13 @@ if "GCP_SA_KEY" in os.environ:
     credentials = bigquery.Client.from_service_account_info(info)
     
     try:
-        # Use pandas-gbq to push the data
+        # Pushing the cleaned data to the table you created
         df.to_gbq(
             destination_table=table_id, 
             project_id=project_id, 
-            if_exists="append", # This keeps your history!
+            if_exists="append", 
             credentials=credentials
         )
-        print("Successfully landed 1,000 rows in BigQuery!")
+        print("Successfully landed rows in BigQuery!")
     except Exception as e:
-        print(f"BigQuery Upload Error: {e}")
-else:
-    print("GCP_SA_KEY not found. Skipping upload.")
+        print(f"BigQuery Error: {e}")
