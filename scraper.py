@@ -2,6 +2,9 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
+import os
+import json
+from google.cloud import bigquery
 
 all_books = []
 
@@ -55,3 +58,26 @@ print(f"Max price: £{max_price:.2f}")
 
 # Save cleaned dataset
 df.to_csv("cleaned_data.csv", index=False)
+
+# --- BIGQUERY INTEGRATION BEGINS HERE ---
+
+# 1. Authenticate (Using the Secret Key you added to GitHub)
+if "GCP_SA_KEY" in os.environ:
+    # This runs on GitHub Actions
+    info = json.loads(os.environ.get("GCP_SA_KEY"))
+    credentials = bigquery.Client.from_service_account_info(info)
+else:
+    # Optional: This helps you test on your local laptop if you have the JSON file
+    credentials = bigquery.Client.from_service_account_json("your_local_key.json")
+
+# 2. Configure the destination
+# Replace 'your-project-id' with your actual Project ID from Google Cloud
+table_id = "your-project-id.ecommerce_data.daily_book_prices"
+
+# 3. Push to BigQuery
+# 'if_exists=append' is CRITICAL: it keeps your old data and adds new rows!
+try:
+    df.to_gbq(table_id, project_id="your-project-id", if_exists="append", credentials=credentials)
+    print("Successfully uploaded to BigQuery!")
+except Exception as e:
+    print(f"Error uploading to BigQuery: {e}")
