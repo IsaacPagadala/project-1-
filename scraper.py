@@ -59,25 +59,25 @@ print(f"Max price: £{max_price:.2f}")
 # Save cleaned dataset
 df.to_csv("cleaned_data.csv", index=False)
 
-# --- FIXED BIGQUERY INTEGRATION ---
+# --- UPDATED BIGQUERY SECTION ---
+# 1. Use the EXACT project ID from your screenshot
+project_id = "price-tracker-pipeline" 
+table_id = "ecommerce_dat.daily_book_prices"
 
-# 1. Authenticate using the Secret Key from GitHub
 if "GCP_SA_KEY" in os.environ:
-    # This part runs on GitHub Actions
     info = json.loads(os.environ.get("GCP_SA_KEY"))
     credentials = bigquery.Client.from_service_account_info(info)
     
-    # Define your Table ID and Project ID
-    # MAKE SURE TO REPLACE 'your-project-id' WITH YOUR ACTUAL PROJECT ID
-    project_id = "price-tracker-pipeline" 
-    table_id = f"{project_id}.ecommerce_data.daily_book_prices"
-
-    # 2. Push to BigQuery
     try:
-        df.to_gbq(table_id, project_id=project_id, if_exists="append", credentials=credentials)
-        print("Successfully uploaded 1000 rows to BigQuery!")
+        # Use pandas-gbq to push the data
+        df.to_gbq(
+            destination_table=table_id, 
+            project_id=project_id, 
+            if_exists="append", # This keeps your history!
+            credentials=credentials
+        )
+        print("Successfully landed 1,000 rows in BigQuery!")
     except Exception as e:
-        print(f"Error uploading to BigQuery: {e}")
+        print(f"BigQuery Upload Error: {e}")
 else:
-    # This runs on your laptop - it will just skip BigQuery so it doesn't crash
-    print("Running locally: Skipping BigQuery upload because GCP_SA_KEY not found.")
+    print("GCP_SA_KEY not found. Skipping upload.")
