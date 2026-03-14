@@ -59,25 +59,25 @@ print(f"Max price: £{max_price:.2f}")
 # Save cleaned dataset
 df.to_csv("cleaned_data.csv", index=False)
 
-# --- BIGQUERY INTEGRATION BEGINS HERE ---
+# --- FIXED BIGQUERY INTEGRATION ---
 
-# 1. Authenticate (Using the Secret Key you added to GitHub)
+# 1. Authenticate using the Secret Key from GitHub
 if "GCP_SA_KEY" in os.environ:
-    # This runs on GitHub Actions
+    # This part runs on GitHub Actions
     info = json.loads(os.environ.get("GCP_SA_KEY"))
     credentials = bigquery.Client.from_service_account_info(info)
+    
+    # Define your Table ID and Project ID
+    # MAKE SURE TO REPLACE 'your-project-id' WITH YOUR ACTUAL PROJECT ID
+    project_id = "your-project-id" 
+    table_id = f"{project_id}.ecommerce_data.daily_book_prices"
+
+    # 2. Push to BigQuery
+    try:
+        df.to_gbq(table_id, project_id=project_id, if_exists="append", credentials=credentials)
+        print("Successfully uploaded 1000 rows to BigQuery!")
+    except Exception as e:
+        print(f"Error uploading to BigQuery: {e}")
 else:
-    # Optional: This helps you test on your local laptop if you have the JSON file
-    credentials = bigquery.Client.from_service_account_json("your_local_key.json")
-
-# 2. Configure the destination
-# Replace 'your-project-id' with your actual Project ID from Google Cloud
-table_id = "your-project-id.ecommerce_data.daily_book_prices"
-
-# 3. Push to BigQuery
-# 'if_exists=append' is CRITICAL: it keeps your old data and adds new rows!
-try:
-    df.to_gbq(table_id, project_id="your-project-id", if_exists="append", credentials=credentials)
-    print("Successfully uploaded to BigQuery!")
-except Exception as e:
-    print(f"Error uploading to BigQuery: {e}")
+    # This runs on your laptop - it will just skip BigQuery so it doesn't crash
+    print("Running locally: Skipping BigQuery upload because GCP_SA_KEY not found.")
