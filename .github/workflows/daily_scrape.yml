@@ -2,8 +2,8 @@ name: Daily Book Scrape
 
 on:
   schedule:
-    - cron: '0 4 * * *' # Runs every day at 9:00 AM
-  workflow_dispatch: # Allows you to run it manually for testing
+    - cron: '30 3 * * *'  # Runs at 9:00 AM IST
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,11 +22,5 @@ jobs:
 
       - name: Run scraper
         run: python scraper.py
-
-      - name: Commit and Push changes
-        run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          git add .
-          git commit -m "Auto-update data" || echo "No changes to commit"
-          git push origin master || echo "No changes to push"
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
